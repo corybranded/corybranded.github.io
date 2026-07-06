@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Availability Poll</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root{
+  --ink:#1B2430;
+  --ink-soft:#57606E;
+  --paper:#F7F5F1;
+  --card:#FFFFFF;
+  --amber:#E2A33D;
+  --amber-dark:#C6842A;
+  --green:#3F8361;
+  --green-bg:#E6F0EA;
+  --rose:#BE5342;
+  --rose-bg:#F5E8E5;
+  --slate:#7C8798;
+  --slate-bg:#EDEEF1;
+  --border:#DDD7CB;
+  --radius:10px;
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:'IBM Plex Sans', sans-serif;
+  font-size:15px;
+  line-height:1.5;
+  min-height:100%;
+}
+
+.wrap{
+  max-width:920px;
+  margin:0 auto;
+  padding:32px 20px 64px;
+}
+
+/* Header */
+.masthead{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:16px;
+  border-bottom:2px solid var(--ink);
+  padding-bottom:20px;
+  margin-bottom:28px;
+}
+.eyebrow{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:11px;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:var(--amber-dark);
+  margin:0 0 6px;
+}
+h1.title{
+  font-family:'Fraunces', serif;
+  font-weight:700;
+  font-size:2.1rem;
+  line-height:1.1;
+  margin:0 0 8px;
+  cursor:default;
+}
+p.desc{
+  margin:0;
+  color:var(--ink-soft);
+  max-width:56ch;
+}
+.settings-toggle{
+  flex-shrink:0;
+  background:none;
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:7px 14px;
+  font-family:'IBM Plex Mono', monospace;
+  font-size:12px;
+  color:var(--ink-soft);
+  cursor:pointer;
+  white-space:nowrap;
+}
+.settings-toggle:hover{border-color:var(--ink); color:var(--ink);}
+
+/* Organizer panel */
+.panel{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:20px;
+  margin-bottom:28px;
+  display:none;
+}
+.panel.open{display:block;}
+.panel h2{
+  font-family:'Fraunces', serif;
+  font-size:1.1rem;
+  margin:0 0 14px;
+}
+.field-row{display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap;}
+.field-row label{
+  display:flex; flex-direction:column; gap:4px;
+  font-size:12px; color:var(--ink-soft);
+}
+input[type=text], input[type=date], input[type=time], textarea{
+  font-family:'IBM Plex Sans', sans-serif;
+  font-size:14px;
+  padding:8px 10px;
+  border:1px solid var(--border);
+  border-radius:6px;
+  background:#fff;
+  color:var(--ink);
+}
+input:focus, textarea:focus, button:focus-visible{
+  outline:2px solid var(--amber);
+  outline-offset:1px;
+}
+textarea{width:100%; min-height:56px; resize:vertical; font-size:14px;}
+.btn{
+  font-family:'IBM Plex Sans', sans-serif;
+  font-weight:600;
+  font-size:13px;
+  padding:9px 16px;
+  border-radius:6px;
+  border:1px solid var(--ink);
+  background:var(--ink);
+  color:#fff;
+  cursor:pointer;
+}
+.btn:hover{background:#000;}
+.btn.secondary{
+  background:transparent; color:var(--ink); border-color:var(--border);
+}
+.btn.secondary:hover{border-color:var(--ink);}
+.btn.danger{
+  background:transparent; color:var(--rose); border-color:var(--rose-bg);
+}
+.btn.danger:hover{background:var(--rose-bg);}
+.btn:disabled{opacity:0.5; cursor:not-allowed;}
+
+.slot-list{list-style:none; margin:14px 0 0; padding:0; display:flex; flex-direction:column; gap:6px;}
+.slot-list li{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:8px 10px;
+  background:var(--paper);
+  border:1px solid var(--border);
+  border-radius:6px;
+  font-family:'IBM Plex Mono', monospace;
+  font-size:13px;
+}
+.slot-list button{
+  background:none; border:none; color:var(--rose); cursor:pointer; font-size:16px; line-height:1;
+}
+.panel-footer{
+  margin-top:16px; padding-top:14px; border-top:1px dashed var(--border);
+  display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;
+}
+.hint{font-size:12px; color:var(--ink-soft);}
+
+/* Your response card */
+.section-label{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:11px;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  color:var(--ink-soft);
+  margin:0 0 10px;
+}
+.respond-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:22px;
+  margin-bottom:32px;
+}
+.name-field{margin-bottom:18px;}
+.name-field label{display:block; font-size:13px; color:var(--ink-soft); margin-bottom:6px;}
+.name-field input{width:100%; max-width:320px; font-size:15px; padding:10px 12px;}
+
+.slot-answer-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:12px 0;
+  border-top:1px solid var(--border);
+  flex-wrap:wrap;
+}
+.slot-answer-row:first-of-type{border-top:none;}
+.slot-info{display:flex; align-items:baseline; gap:10px;}
+.slot-day{
+  font-family:'Fraunces', serif;
+  font-weight:600;
+  font-size:1.05rem;
+}
+.slot-time{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:12.5px;
+  color:var(--ink-soft);
+}
+.toggle-group{display:flex; gap:6px;}
+.toggle-btn{
+  font-family:'IBM Plex Sans', sans-serif;
+  font-size:12.5px;
+  font-weight:600;
+  padding:7px 12px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  background:#fff;
+  color:var(--ink-soft);
+  cursor:pointer;
+}
+.toggle-btn[data-val="yes"].active{background:var(--green); border-color:var(--green); color:#fff;}
+.toggle-btn[data-val="no"].active{background:var(--rose); border-color:var(--rose); color:#fff;}
+.toggle-btn[data-val="maybe"].active{background:var(--amber); border-color:var(--amber); color:#fff;}
+.toggle-btn:hover{border-color:var(--ink-soft);}
+
+.submit-row{
+  display:flex; align-items:center; gap:12px; margin-top:18px; flex-wrap:wrap;
+}
+.status-msg{font-size:13px; color:var(--green); font-family:'IBM Plex Mono', monospace;}
+.status-msg.error{color:var(--rose);}
+
+.empty-state{
+  text-align:center; padding:40px 20px; color:var(--ink-soft);
+  border:1px dashed var(--border); border-radius:var(--radius); background:var(--card);
+}
+
+/* Results grid */
+.results-wrap{overflow-x:auto; border:1px solid var(--border); border-radius:var(--radius); background:var(--card);}
+table.grid{border-collapse:collapse; width:100%; min-width:520px;}
+table.grid th, table.grid td{padding:0; text-align:center;}
+th.name-col, td.name-col{
+  text-align:left;
+  position:sticky; left:0;
+  background:var(--card);
+  padding:12px 16px;
+  font-weight:600;
+  border-right:1px solid var(--border);
+  min-width:140px;
+  z-index:1;
+}
+th.name-col{background:var(--ink); color:#fff; font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; font-weight:500;}
+
+.slot-tab{
+  padding:10px 14px;
+  border-bottom:1px solid var(--border);
+  border-left:1px solid var(--border);
+  min-width:96px;
+  background:var(--ink);
+  color:#fff;
+}
+.slot-tab .d{font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; opacity:0.75;}
+.slot-tab .n{font-family:'Fraunces', serif; font-weight:700; font-size:1.2rem; line-height:1.1;}
+.slot-tab .t{font-family:'IBM Plex Mono', monospace; font-size:10.5px; opacity:0.85;}
+
+td.ans{border-left:1px solid var(--border); border-top:1px solid var(--border); padding:14px 8px;}
+.dot{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:26px; height:26px; border-radius:50%;
+  font-size:14px; font-weight:700; color:#fff;
+}
+.dot.yes{background:var(--green);}
+.dot.no{background:var(--rose);}
+.dot.maybe{background:var(--amber);}
+
+.summary-row td, .summary-row th{
+  border-top:2px solid var(--ink);
+  font-family:'IBM Plex Mono', monospace;
+  font-size:12px;
+  color:var(--ink-soft);
+  padding:10px 8px;
+  background:var(--paper);
+}
+.summary-row th.name-col{background:var(--paper); color:var(--ink-soft);}
+
+.legend{display:flex; gap:16px; margin-top:12px; font-size:12px; color:var(--ink-soft); flex-wrap:wrap;}
+.legend span{display:inline-flex; align-items:center; gap:6px;}
+.legend .dot{width:14px; height:14px; font-size:0;}
+
+.notify-note{
+  margin-top:32px;
+  padding:16px 18px;
+  border:1px dashed var(--border);
+  border-radius:var(--radius);
+  font-size:13px;
+  color:var(--ink-soft);
+  background:var(--card);
+}
+.notify-note strong{color:var(--ink);}
+
+@media (max-width:600px){
+  h1.title{font-size:1.6rem;}
+  .masthead{flex-direction:column;}
+  .slot-answer-row{flex-direction:column; align-items:flex-start;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <div>
+      <p class="eyebrow">Availability poll</p>
+      <h1 class="title" id="pollTitle">When works for everyone?</h1>
+      <p class="desc" id="pollDesc">Pick the times you're free below. Everyone's answers are visible to the group.</p>
+    </div>
+    <button class="settings-toggle" id="toggleSettings" type="button">Organizer tools ▾</button>
+  </div>
+
+  <div class="panel" id="settingsPanel">
+    <h2>Poll details</h2>
+    <div class="field-row">
+      <label style="flex:1; min-width:220px;">Poll title
+        <input type="text" id="titleInput" placeholder="e.g. Q3 planning session">
+      </label>
+    </div>
+    <div class="field-row">
+      <label style="flex:1;">Description
+        <textarea id="descInput" placeholder="A line of context for respondents"></textarea>
+      </label>
+    </div>
+    <button class="btn secondary" id="saveDetails" type="button">Save details</button>
+
+    <h2 style="margin-top:24px;">Dates &amp; times</h2>
+    <div class="field-row">
+      <label>Date
+        <input type="date" id="slotDate">
+      </label>
+      <label>Time
+        <input type="time" id="slotTime">
+      </label>
+      <label style="justify-content:flex-end;">
+        <span style="visibility:hidden;">.</span>
+        <button class="btn" id="addSlot" type="button">+ Add slot</button>
+      </label>
+    </div>
+    <ul class="slot-list" id="slotList"></ul>
+
+    <div class="panel-footer">
+      <span class="hint">Anyone with this link can open Organizer tools — add all your dates before sharing.</span>
+      <button class="btn danger" id="clearResponses" type="button">Clear all responses</button>
+    </div>
+  </div>
+
+  <p class="section-label">Your availability</p>
+  <div class="respond-card">
+    <div class="name-field">
+      <label for="nameInput">Your name</label>
+      <input type="text" id="nameInput" placeholder="Type your name" autocomplete="off">
+    </div>
+    <div id="answerRows"></div>
+    <div id="noSlotsMsg" class="empty-state" style="display:none;">
+      No dates have been added yet. Ask the organizer to add some using "Organizer tools" above.
+    </div>
+    <div class="submit-row">
+      <button class="btn" id="submitBtn" type="button">Submit my availability</button>
+      <span class="status-msg" id="statusMsg"></span>
+    </div>
+  </div>
+
+  <p class="section-label">Group results</p>
+  <div id="resultsArea"></div>
+  <div class="legend">
+    <span><span class="dot yes">✓</span> Available</span>
+    <span><span class="dot no">✕</span> Not available</span>
+    <span><span class="dot maybe">~</span> If needed</span>
+  </div>
+
+  <div class="notify-note">
+    <strong>Email notifications:</strong> this page doesn't send email on its own — it's a sandboxed webpage without outbound access.
+    Check the results above anytime, or ask Claude to walk through wiring a Zapier "New Row" / webhook trigger if you move this data into a connected sheet or form.
+  </div>
+
+</div>
+
+<script>
+(function(){
+  const DEFAULT_CONFIG = { title: "When works for everyone?", desc: "Pick the times you're free below. Everyone's answers are visible to the group.", slots: [] };
+  let config = null;
+  let currentAnswers = {};
+
+  const el = (id) => document.getElementById(id);
+
+  async function getJSON(key, shared){
+    try{
+      const res = await window.storage.get(key, shared);
+      return res ? JSON.parse(res.value) : null;
+    }catch(e){ return null; }
+  }
+  async function setJSON(key, value, shared){
+    try{ await window.storage.set(key, JSON.stringify(value), shared); }catch(e){ console.error('storage set failed', e); }
+  }
+  function slugify(name){
+    return name.trim().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+  }
+  function fmtDay(dateStr){
+    const d = new Date(dateStr + 'T00:00:00');
+    return { dow: d.toLocaleDateString(undefined,{weekday:'short'}), num: d.getDate(), mon: d.toLocaleDateString(undefined,{month:'short'}) };
+  }
+  function fmtTime(timeStr){
+    if(!timeStr) return '';
+    const [h,m] = timeStr.split(':').map(Number);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    const h12 = ((h+11)%12)+1;
+    return `${h12}:${String(m).padStart(2,'0')} ${ampm}`;
+  }
+
+  async function loadConfig(){
+    config = await getJSON('poll-config', true);
+    if(!config){ config = DEFAULT_CONFIG; await setJSON('poll-config', config, true); }
+    if(!Array.isArray(config.slots)) config.slots = [];
+  }
+
+  function renderHeader(){
+    el('pollTitle').textContent = config.title || DEFAULT_CONFIG.title;
+    el('pollDesc').textContent = config.desc || DEFAULT_CONFIG.desc;
+    el('titleInput').value = config.title || '';
+    el('descInput').value = config.desc || '';
+  }
+
+  function renderSlotList(){
+    const ul = el('slotList');
+    ul.innerHTML = '';
+    if(config.slots.length === 0){
+      ul.innerHTML = '<li style="justify-content:center; color:var(--ink-soft);">No dates added yet</li>';
+      return;
+    }
+    config.slots.forEach(slot => {
+      const d = fmtDay(slot.date);
+      const li = document.createElement('li');
+      li.innerHTML = `<span>${d.dow} ${d.mon} ${d.num} — ${fmtTime(slot.time)}</span>`;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.title = 'Remove this date';
+      btn.textContent = '×';
+      btn.addEventListener('click', async () => {
+        config.slots = config.slots.filter(s => s.id !== slot.id);
+        await setJSON('poll-config', config, true);
+        renderSlotList();
+        renderAnswerRows();
+        await renderResults();
+      });
+      li.appendChild(btn);
+      ul.appendChild(li);
+    });
+  }
+
+  function renderAnswerRows(){
+    const wrap = el('answerRows');
+    const noSlots = el('noSlotsMsg');
+    wrap.innerHTML = '';
+    if(config.slots.length === 0){
+      noSlots.style.display = 'block';
+      el('submitBtn').disabled = true;
+      return;
+    }
+    noSlots.style.display = 'none';
+    el('submitBtn').disabled = false;
+    config.slots.forEach(slot => {
+      const d = fmtDay(slot.date);
+      const row = document.createElement('div');
+      row.className = 'slot-answer-row';
+      row.innerHTML = `
+        <div class="slot-info">
+          <span class="slot-day">${d.dow} ${d.mon} ${d.num}</span>
+          <span class="slot-time">${fmtTime(slot.time)}</span>
+        </div>
+        <div class="toggle-group" data-slot="${slot.id}">
+          <button type="button" class="toggle-btn" data-val="yes">Available</button>
+          <button type="button" class="toggle-btn" data-val="maybe">If needed</button>
+          <button type="button" class="toggle-btn" data-val="no">Not available</button>
+        </div>
+      `;
+      wrap.appendChild(row);
+    });
+    wrap.querySelectorAll('.toggle-group').forEach(group => {
+      const slotId = group.getAttribute('data-slot');
+      group.querySelectorAll('.toggle-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          currentAnswers[slotId] = btn.getAttribute('data-val');
+          group.querySelectorAll('.toggle-btn').forEach(b => b.classList.toggle('active', b === btn));
+        });
+      });
+    });
+    applyCurrentAnswersToUI();
+  }
+
+  function applyCurrentAnswersToUI(){
+    document.querySelectorAll('.toggle-group').forEach(group => {
+      const slotId = group.getAttribute('data-slot');
+      const val = currentAnswers[slotId];
+      group.querySelectorAll('.toggle-btn').forEach(b => {
+        b.classList.toggle('active', val && b.getAttribute('data-val') === val);
+      });
+    });
+  }
+
+  async function prefillIfExisting(name){
+    const slug = slugify(name);
+    if(!slug) return;
+    const existing = await getJSON('response:' + slug, true);
+    if(existing && existing.answers){
+      currentAnswers = Object.assign({}, existing.answers);
+      applyCurrentAnswersToUI();
+    }
+  }
+
+  async function renderResults(){
+    const area = el('resultsArea');
+    const keysRes = await (async () => {
+      try{ return await window.storage.list('response:', true); }catch(e){ return null; }
+    })();
+    const keys = (keysRes && keysRes.keys) ? keysRes.keys : [];
+    if(keys.length === 0 || config.slots.length === 0){
+      area.innerHTML = '<div class="empty-state">No responses yet. Once people submit, their availability will show up here.</div>';
+      return;
+    }
+    const responses = [];
+    for(const k of keys){
+      const r = await getJSON(k, true);
+      if(r) responses.push(r);
+    }
+    responses.sort((a,b) => (a.name||'').localeCompare(b.name||''));
+
+    let thead = '<tr><th class="name-col">Name</th>';
+    config.slots.forEach(slot => {
+      const d = fmtDay(slot.date);
+      thead += `<th class="slot-tab"><div class="d">${d.dow}</div><div class="n">${d.mon} ${d.num}</div><div class="t">${fmtTime(slot.time)}</div></th>`;
+    });
+    thead += '</tr>';
+
+    let rows = '';
+    responses.forEach(r => {
+      rows += `<tr><td class="name-col">${escapeHtml(r.name)}</td>`;
+      config.slots.forEach(slot => {
+        const ans = (r.answers || {})[slot.id];
+        rows += `<td class="ans">${ans ? dotFor(ans) : '<span style="color:var(--border);">—</span>'}</td>`;
+      });
+      rows += '</tr>';
+    });
+
+    let summary = '<tr class="summary-row"><th class="name-col">Available</th>';
+    config.slots.forEach(slot => {
+      const count = responses.filter(r => (r.answers||{})[slot.id] === 'yes').length;
+      summary += `<td>${count}/${responses.length}</td>`;
+    });
+    summary += '</tr>';
+
+    area.innerHTML = `<div class="results-wrap"><table class="grid"><thead>${thead}</thead><tbody>${rows}${summary}</tbody></table></div>`;
+  }
+
+  function dotFor(ans){
+    const map = { yes: ['dot yes','✓'], no: ['dot no','✕'], maybe: ['dot maybe','~'] };
+    const [cls, sym] = map[ans] || ['dot','?'];
+    return `<span class="${cls}">${sym}</span>`;
+  }
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  async function submitResponse(){
+    const name = el('nameInput').value.trim();
+    const statusEl = el('statusMsg');
+    statusEl.classList.remove('error');
+    if(!name){
+      statusEl.textContent = 'Enter your name first.';
+      statusEl.classList.add('error');
+      return;
+    }
+    const unanswered = config.slots.filter(s => !currentAnswers[s.id]);
+    if(unanswered.length > 0){
+      statusEl.textContent = `Please answer all ${config.slots.length} dates before submitting.`;
+      statusEl.classList.add('error');
+      return;
+    }
+    const slug = slugify(name);
+    const payload = { name, answers: currentAnswers, submittedAt: new Date().toISOString() };
+    await setJSON('response:' + slug, payload, true);
+    statusEl.classList.remove('error');
+    statusEl.textContent = 'Saved — thanks!';
+    await renderResults();
+  }
+
+  function wireEvents(){
+    el('toggleSettings').addEventListener('click', () => {
+      el('settingsPanel').classList.toggle('open');
+    });
+    el('saveDetails').addEventListener('click', async () => {
+      config.title = el('titleInput').value.trim() || DEFAULT_CONFIG.title;
+      config.desc = el('descInput').value.trim();
+      await setJSON('poll-config', config, true);
+      renderHeader();
+    });
+    el('addSlot').addEventListener('click', async () => {
+      const date = el('slotDate').value;
+      const time = el('slotTime').value;
+      if(!date || !time) return;
+      config.slots.push({ id: 's' + Date.now() + Math.floor(Math.random()*1000), date, time });
+      config.slots.sort((a,b) => (a.date+a.time).localeCompare(b.date+b.time));
+      await setJSON('poll-config', config, true);
+      el('slotDate').value = '';
+      el('slotTime').value = '';
+      renderSlotList();
+      renderAnswerRows();
+      await renderResults();
+    });
+    el('clearResponses').addEventListener('click', async () => {
+      if(!confirm('Delete every submitted response? This cannot be undone.')) return;
+      try{
+        const listRes = await window.storage.list('response:', true);
+        const keys = (listRes && listRes.keys) ? listRes.keys : [];
+        for(const k of keys){ await window.storage.delete(k, true); }
+      }catch(e){ console.error(e); }
+      await renderResults();
+    });
+    el('nameInput').addEventListener('blur', (e) => prefillIfExisting(e.target.value));
+    el('submitBtn').addEventListener('click', submitResponse);
+  }
+
+  async function init(){
+    await loadConfig();
+    renderHeader();
+    renderSlotList();
+    renderAnswerRows();
+    wireEvents();
+    await renderResults();
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
