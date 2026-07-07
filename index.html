@@ -334,56 +334,37 @@ td.ans{border-left:1px solid var(--border); border-top:1px solid var(--border); 
   </div>
 
   <div class="panel" id="settingsPanel">
-    <div id="loginBox">
-      <h2>Organizer sign in</h2>
-      <div class="field-row">
-        <label>Email
-          <input type="text" id="orgEmail" autocomplete="username">
-        </label>
-        <label>Password
-          <input type="password" id="orgPassword" autocomplete="current-password">
-        </label>
-        <label style="justify-content:flex-end;">
-          <span style="visibility:hidden;">.</span>
-          <button class="btn" id="loginBtn" type="button">Sign in</button>
-        </label>
-      </div>
-      <span class="status-msg error" id="loginError"></span>
+    <h2>Poll details</h2>
+    <div class="field-row">
+      <label style="flex:1; min-width:220px;">Poll title
+        <input type="text" id="titleInput" placeholder="e.g. Q3 planning session">
+      </label>
     </div>
+    <div class="field-row">
+      <label style="flex:1;">Description
+        <textarea id="descInput" placeholder="A line of context for respondents"></textarea>
+      </label>
+    </div>
+    <button class="btn secondary" id="saveDetails" type="button">Save details</button>
 
-    <div id="organizerContent" style="display:none;">
-      <h2>Poll details</h2>
-      <div class="field-row">
-        <label style="flex:1; min-width:220px;">Poll title
-          <input type="text" id="titleInput" placeholder="e.g. Q3 planning session">
-        </label>
-      </div>
-      <div class="field-row">
-        <label style="flex:1;">Description
-          <textarea id="descInput" placeholder="A line of context for respondents"></textarea>
-        </label>
-      </div>
-      <button class="btn secondary" id="saveDetails" type="button">Save details</button>
+    <h2 style="margin-top:24px;">Dates &amp; times</h2>
+    <div class="field-row">
+      <label>Date
+        <input type="date" id="slotDate">
+      </label>
+      <label>Time
+        <input type="time" id="slotTime">
+      </label>
+      <label style="justify-content:flex-end;">
+        <span style="visibility:hidden;">.</span>
+        <button class="btn" id="addSlot" type="button">+ Add slot</button>
+      </label>
+    </div>
+    <ul class="slot-list" id="slotList"></ul>
 
-      <h2 style="margin-top:24px;">Dates &amp; times</h2>
-      <div class="field-row">
-        <label>Date
-          <input type="date" id="slotDate">
-        </label>
-        <label>Time
-          <input type="time" id="slotTime">
-        </label>
-        <label style="justify-content:flex-end;">
-          <span style="visibility:hidden;">.</span>
-          <button class="btn" id="addSlot" type="button">+ Add slot</button>
-        </label>
-      </div>
-      <ul class="slot-list" id="slotList"></ul>
-
-      <div class="panel-footer">
-        <button class="btn secondary" id="signOutBtn" type="button">Sign out</button>
-        <button class="btn danger" id="clearResponses" type="button">Clear all responses</button>
-      </div>
+    <div class="panel-footer">
+      <span class="hint">Anyone with this link can open Organizer tools.</span>
+      <button class="btn danger" id="clearResponses" type="button">Clear all responses</button>
     </div>
   </div>
 
@@ -411,8 +392,6 @@ td.ans{border-left:1px solid var(--border); border-top:1px solid var(--border); 
     <span><span class="dot maybe">~</span> If needed</span>
   </div>
 
- 
-
 </div>
 
 <script type="module">
@@ -435,15 +414,11 @@ td.ans{border-left:1px solid var(--border); border-top:1px solid var(--border); 
     getFirestore, doc, getDoc, setDoc, deleteDoc,
     collection, getDocs, onSnapshot
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-  import {
-    getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
-  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
   const DEFAULT_CONFIG = { title: "When works for everyone?", desc: "Pick the times you're free below. Everyone's answers are visible to the group.", slots: [] };
   const isConfigured = firebaseConfig.apiKey && firebaseConfig.apiKey !== "YOUR_API_KEY";
 
-  let app, db, auth;
-  let isOrganizer = false;
+  let app, db;
   let config = { ...DEFAULT_CONFIG };
   let responses = [];
   let currentAnswers = {};
@@ -645,31 +620,9 @@ td.ans{border-left:1px solid var(--border); border-top:1px solid var(--border); 
     }
   }
 
-  function updateOrganizerUI(){
-    el('toggleSettings').textContent = isOrganizer ? 'Organizer tools ▾' : 'Organizer sign in';
-    el('loginBox').style.display = isOrganizer ? 'none' : 'block';
-    el('organizerContent').style.display = isOrganizer ? 'block' : 'none';
-  }
-
   function wireEvents(){
     el('toggleSettings').addEventListener('click', () => {
       el('settingsPanel').classList.toggle('open');
-    });
-    el('loginBtn').addEventListener('click', async () => {
-      const email = el('orgEmail').value.trim();
-      const password = el('orgPassword').value;
-      const errEl = el('loginError');
-      errEl.textContent = '';
-      try{
-        await signInWithEmailAndPassword(auth, email, password);
-        el('orgPassword').value = '';
-      }catch(e){
-        errEl.textContent = 'Sign-in failed — check your email and password.';
-      }
-    });
-    el('signOutBtn').addEventListener('click', async () => {
-      await signOut(auth);
-      el('settingsPanel').classList.remove('open');
     });
     el('saveDetails').addEventListener('click', async () => {
       config.title = el('titleInput').value.trim() || DEFAULT_CONFIG.title;
@@ -697,20 +650,12 @@ td.ans{border-left:1px solid var(--border); border-top:1px solid var(--border); 
 
   function init(){
     if(!isConfigured){
-      el('setupWarning').style.display = 'block';
-      el('toggleSettings').textContent = 'Organizer sign in';
       wireEvents();
       renderHeader(); renderSlotList(); renderAnswerRows(); renderResults();
       return;
     }
     app = initializeApp(firebaseConfig);
     db = getFirestore(app);
-    auth = getAuth(app);
-
-    onAuthStateChanged(auth, (user) => {
-      isOrganizer = !!user;
-      updateOrganizerUI();
-    });
 
     onSnapshot(doc(db, "poll", "config"), (snap) => {
       if(snap.exists()){
@@ -726,7 +671,6 @@ td.ans{border-left:1px solid var(--border); border-top:1px solid var(--border); 
       renderResults();
     }, (err) => {
       console.error(err);
-      el('setupWarning').style.display = 'block';
     });
 
     onSnapshot(collection(db, "responses"), (snap) => {
