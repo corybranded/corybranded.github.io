@@ -361,6 +361,7 @@ td.ans{border-left:1px solid var(--border); border-top:1px solid var(--border); 
       </label>
     </div>
     <ul class="slot-list" id="slotList"></ul>
+    <span class="status-msg error" id="orgStatusMsg"></span>
 
     <div class="panel-footer">
       <span class="hint">Anyone with this link can open Organizer tools.</span>
@@ -398,12 +399,12 @@ td.ans{border-left:1px solid var(--border); border-top:1px solid var(--border); 
   // ====================== SETUP: fill these two things in ======================
   // 1. Paste the firebaseConfig object from Firebase Console → Project settings → Your apps → Web app
   const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyB5PFvt2kvg882BkkI_vaXGEFGii-1toYU",
+    authDomain: "availability-poll-b02d4.firebaseapp.com",
+    projectId: "availability-poll-b02d4",
+    storageBucket: "availability-poll-b02d4.firebasestorage.app",
+    messagingSenderId: "167852695150",
+    appId: "1:167852695150:web:59d419ae89dd328860907f"
   };
   // 2. Paste your Zapier "Catch Hook" webhook URL. Leave as "" to skip the email trigger entirely.
   const ZAPIER_WEBHOOK_URL = "";
@@ -625,24 +626,48 @@ td.ans{border-left:1px solid var(--border); border-top:1px solid var(--border); 
       el('settingsPanel').classList.toggle('open');
     });
     el('saveDetails').addEventListener('click', async () => {
+      const orgStatus = el('orgStatusMsg');
+      orgStatus.textContent = '';
       config.title = el('titleInput').value.trim() || DEFAULT_CONFIG.title;
       config.desc = el('descInput').value.trim();
-      await setDoc(doc(db, "poll", "config"), config);
+      try{
+        await setDoc(doc(db, "poll", "config"), config);
+      }catch(e){
+        console.error('saveDetails failed:', e);
+        orgStatus.textContent = 'Could not save: ' + (e.message || e.code || 'unknown error');
+      }
     });
     el('addSlot').addEventListener('click', async () => {
+      const orgStatus = el('orgStatusMsg');
+      orgStatus.textContent = '';
       const date = el('slotDate').value;
       const time = el('slotTime').value;
-      if(!date || !time) return;
-      config.slots.push({ id: 's' + Date.now() + Math.floor(Math.random()*1000), date, time });
-      config.slots.sort((a,b) => (a.date+a.time).localeCompare(b.date+b.time));
-      await setDoc(doc(db, "poll", "config"), config);
-      el('slotDate').value = '';
-      el('slotTime').value = '';
+      if(!date || !time){
+        orgStatus.textContent = 'Pick both a date and a time before adding.';
+        return;
+      }
+      const updated = { ...config, slots: [...config.slots, { id: 's' + Date.now() + Math.floor(Math.random()*1000), date, time }] };
+      updated.slots.sort((a,b) => (a.date+a.time).localeCompare(b.date+b.time));
+      try{
+        await setDoc(doc(db, "poll", "config"), updated);
+        el('slotDate').value = '';
+        el('slotTime').value = '';
+      }catch(e){
+        console.error('addSlot failed:', e);
+        orgStatus.textContent = 'Could not save: ' + (e.message || e.code || 'unknown error');
+      }
     });
     el('clearResponses').addEventListener('click', async () => {
       if(!confirm('Delete every submitted response? This cannot be undone.')) return;
-      const snap = await getDocs(collection(db, "responses"));
-      for(const d of snap.docs){ await deleteDoc(doc(db, "responses", d.id)); }
+      const orgStatus = el('orgStatusMsg');
+      orgStatus.textContent = '';
+      try{
+        const snap = await getDocs(collection(db, "responses"));
+        for(const d of snap.docs){ await deleteDoc(doc(db, "responses", d.id)); }
+      }catch(e){
+        console.error('clearResponses failed:', e);
+        orgStatus.textContent = 'Could not clear: ' + (e.message || e.code || 'unknown error');
+      }
     });
     el('nameInput').addEventListener('blur', (e) => prefillIfExisting(e.target.value));
     el('submitBtn').addEventListener('click', submitResponse);
